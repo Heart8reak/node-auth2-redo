@@ -5,27 +5,23 @@ const router = require('express').Router();
 const Users = require('../users/users-model');
 const { isValid } = require('../users/users-service');
 
-router.post('/register', async (req, res, next) => {
+router.post('/register', (req, res) => {
 	const credentials = req.body;
 
-	try {
-		if (isValid(credentials)) {
-			console.log('CREDS', credentials);
-			const rounds = process.env.BCRYPT_ROUNDS ? parseInt(process.env.BCRYPT_ROUNDS) : 8;
-			console.log('ROUNDS', rounds);
-			const hash = brcyptjs.hashSync(credentials.password, rounds);
-			console.log('HASH', hash);
-			credentials.password = hash;
-			const user = await Users.add(credentials);
-			console.log('NEW USER', user);
-			const token = generateToken(user);
-			console.log(token);
-			res.status(201).json({ message: 'Success', user, token });
-		} else {
-			next({ apiCode: 400, apiMessage: 'You need username or password' });
-		}
-	} catch (err) {
-		next({ apiCode: 500, appiMessage: 'Failed saving a new user', ...err });
+	if (isValid(credentials)) {
+		console.log('CREDENTIALS ====>', credentials);
+		const rounds = process.env.BCRYPT_ROUNDS ? parseInt(process.env.BCRYPT_ROUNDS) : 8;
+		console.log('ROUNDS ===>', rounds);
+		const hash = brcyptjs.hashSync(credentials.password, rounds);
+		console.log('HASH ==>', hash);
+		credentials.password = hash;
+		const user = Users.add(credentials);
+		console.log('NEW USER =>', user);
+		const token = generateToken(user);
+		console.log('TOKEN =>', token);
+		res.status(201).json({ message: 'Success', user, token });
+	} else {
+		next({ apiCode: 400, apiMessage: 'You need username or password' });
 	}
 });
 
